@@ -1,5 +1,3 @@
-
-
 from typing import List, Union, Generator, Iterator
 from pydantic import BaseModel
 import requests
@@ -43,61 +41,6 @@ class Pipeline:
                 # This is where you can add your custom pipelines like RAG.
 
         input = {"input":user_message}
-        async def run_with_tracing():
-            final_response = None  # 최종 Agent 답변을 저장할 변수
-            async for event in self.app.astream(input, config=self.config):
-                if "planner" in event:
-                    plan_data = event["planner"].get("plan", [])
-                    if plan_data:
-                        print("\n" + "-"*20 + " Plan Node Output " + "-"*20)
-                        for idx, step in enumerate(plan_data, 1):
-                            formatted_step = step.replace("\n", "\n    ")
-                            print(f"Step {idx}:\n    {formatted_step}\n")
-                
-                if "agent" in event:
-                    agent_data = event["agent"].get("past_steps", [])
-                    if agent_data:
-                        print("\n" + "-"*20 + " Agent Execution Output " + "-"*20)
-                        for idx, (task, response) in enumerate(agent_data, 1):
-                            formatted_task = task.replace("\n", "\n    ")
-                            formatted_response = response.replace("\n", "\n    ")
-                            print(f"\n-- Execution #{idx} --")
-                            print("Task:")
-                            print("    " + formatted_task)
-                            print("\nAgent Response:")
-                            print("    " + formatted_response)
-                
-                if "replan" in event:
-                    replan_data = event["replan"]
-                    if "response" in replan_data and replan_data["response"]:
-                        final_response = replan_data["response"]
-                        formatted_final = final_response.replace("\n", "\n    ")
-                        print("\n" + "-"*20 + " Final Response " + "-"*20)
-                        print("    " + formatted_final)
-                        break
-                    elif "plan" in replan_data:
-                        updated_plan = replan_data["plan"]
-                        if updated_plan:
-                            print("\n" + "-"*20 + " Updated Plan from Replan Node " + "-"*20)
-                            for idx, step in enumerate(updated_plan, 1):
-                                formatted_step = step.replace("\n", "\n    ")
-                                print(f"Step {idx}:\n    {formatted_step}\n")
-            return final_response
-        response=asyncio.run(run_with_tracing())
-        return response
-                    if "response" in replan_data and replan_data["response"]:
-                        final_response = replan_data["response"]
-                        formatted_final = final_response.replace("\n", "\n    ")
-                        print("\n" + "-"*20 + " Final Response " + "-"*20)
-                        print("    " + formatted_final)
-                        break
-                    elif "plan" in replan_data:
-                        updated_plan = replan_data["plan"]
-                        if updated_plan:
-                            print("\n" + "-"*20 + " Updated Plan from Replan Node " + "-"*20)
-                            for idx, step in enumerate(updated_plan, 1):
-                                formatted_step = step.replace("\n", "\n    ")
-                                print(f"Step {idx}:\n    {formatted_step}\n")
-            return final_response
-        response=asyncio.run(run_with_tracing())
+        response=[]
+  
         return response
