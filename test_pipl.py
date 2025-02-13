@@ -43,4 +43,4 @@ class Pipeline:
             self, user_message: str, model_id: str, messages: List[dict], body: dict
     ) -> Union[str, Generator, Iterator]:
         # This is where you can add your custom pipelines like RAG.
-    return user_message
+        return user_message
