@@ -218,23 +218,11 @@ class Pipeline:
     def pipe(
             self, user_message: str, model_id: str, messages: List[dict], body: dict) -> Union[str, Generator, Iterator]:
                 # This is where you can add your custom pipelines like RAG.
-        print(f"pipe:{__name__}")
-
-        print(messages)
-        print(user_message)
-
-        headers = {
-            "api-key": self.valves.AZURE_OPENAI_API_KEY,
-            "Content-Type": "application/json",
-        }
 
         input = {"input":user_message}
-  
         async def run_with_tracing():
             final_response = None  # 최종 Agent 답변을 저장할 변수
             async for event in self.app.astream(input, config=self.config):
-                
-                # 플래너 노드 출력 (키: "planner")
                 if "planner" in event:
                     plan_data = event["planner"].get("plan", [])
                     if plan_data:
@@ -243,7 +231,6 @@ class Pipeline:
                             formatted_step = step.replace("\n", "\n    ")
                             print(f"Step {idx}:\n    {formatted_step}\n")
                 
-                # 에이전트 노드 출력 (키: "agent")
                 if "agent" in event:
                     agent_data = event["agent"].get("past_steps", [])
                     if agent_data:
@@ -257,9 +244,24 @@ class Pipeline:
                             print("\nAgent Response:")
                             print("    " + formatted_response)
                 
-                # 리플래너 노드 출력 (최종 응답 확인; 키: "replan")
                 if "replan" in event:
                     replan_data = event["replan"]
+                    if "response" in replan_data and replan_data["response"]:
+                        final_response = replan_data["response"]
+                        formatted_final = final_response.replace("\n", "\n    ")
+                        print("\n" + "-"*20 + " Final Response " + "-"*20)
+                        print("    " + formatted_final)
+                        break
+                    elif "plan" in replan_data:
+                        updated_plan = replan_data["plan"]
+                        if updated_plan:
+                            print("\n" + "-"*20 + " Updated Plan from Replan Node " + "-"*20)
+                            for idx, step in enumerate(updated_plan, 1):
+                                formatted_step = step.replace("\n", "\n    ")
+                                print(f"Step {idx}:\n    {formatted_step}\n")
+            return final_response
+        response=asyncio.run(run_with_tracing())
+        return response
                     if "response" in replan_data and replan_data["response"]:
                         final_response = replan_data["response"]
                         formatted_final = final_response.replace("\n", "\n    ")
